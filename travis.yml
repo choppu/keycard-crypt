@@ -1,0 +1,28 @@
+language: go
+sudo: false
+matrix:
+  include:
+    - go: 1.x
+
+before_install:
+  - go get github.com/mitchellh/gox
+
+install:
+  - # skip
+
+script:
+  - go get -t -v ./...
+  - diff -u <(echo -n) <(gofmt -d .)
+  - go vet $(go list ./... | grep -v /vendor/)
+  - go test -v -race ./...
+  - gox -os="linux darwin windows" -arch="amd64" -output="{{.Dir}}-$TRAVIS_TAG-{{.OS}}-{{.Arch}}"
+
+deploy:
+  provider: releases
+  api_key:
+    secure: "eg3spVLCGaR2GXTazQc45n7PkCtqPX4Yv6UL6FA4em0rfSECgjJG+71UZoWRfETMoQwAJQp9do7binMm/l78TcFz1Ubxhv4OJSZhYhSTFRVfBaR4BcxmKd1OpBn7NOzyKs/kJs3nQ6eLUEHvdobiKnobRlUcA02fr6T2g1Kour0YhNqG60GmzEN1U/O0Zt2OBOpE/Cbdv598UYqH+PHHrRwDcxpe03O5LGDZCKy+rnPPavDjOc734og1r/DFVDc3Gddqdr/tDg9Q50oV6H6rw67osq/7gJRlhWl275QG8DCYqIdSOY3pmS4sh5EavMeDkagWIdwv2zXqwiGNky6oH3MZ5PAFe8PkCTt6y5IGhP8tBtnSziU5phdoP0Y4ico7uWEfffXWQYmRHjO/ryDsdIMVR2rLT0+9W0GTKpaJu/6NNsT0j/1WqV5SAo2z1ueDZ+Z8eot7R25gYcTvW7o5oa1Zq2ZNbzQjWwKLWG1GtZvKeDUhuzZuPTazgfabmZcaoWFAlSxeo9g+9LxZGzqArcqGyZ1mGwONlFYX4WMnRRt57MkjZaX8w/8es8Ryp0Ax53GPXr4yLHTs0LpTPxu5a/key2a7HrCskp9fHH14zAYlUywsmEcoMYNaKKXe8/b6CqDVFYfebd0/LB4nolX4hyHjWnU5VVx6z8CSlaYVx/I="
+  skip_cleanup: true
+  file_glob: true
+  file: ./*-amd64*
+  on:
+    tags: true
